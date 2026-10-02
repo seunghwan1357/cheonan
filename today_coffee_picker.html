@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>오늘의 커피 선택기</title>
+<style>
+:root{
+  --bg:#082f49; --bg2:#0c4a6e; --panel:#f8fafc; --card:#ffffff;
+  --text:#0f172a; --muted:#64748b; --line:#dbeafe; --accent:#2563eb;
+  --accent2:#38bdf8; --coffee:#7c4a2d; --coffee2:#d6a36a;
+  --good:#0f766e; --shadow:0 18px 50px rgba(2,18,35,.22);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
+  color:#fff;background:
+  radial-gradient(circle at 10% 0%,rgba(56,189,248,.24),transparent 28%),
+  linear-gradient(145deg,var(--bg),var(--bg2));min-height:100vh;padding:28px 16px 46px;
+}
+button,input{font:inherit}
+.wrap{width:min(1120px,100%);margin:auto}
+.hero{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:20px}
+.hero h1{font-size:clamp(28px,5vw,48px);margin:0 0 8px;letter-spacing:-.04em}
+.hero p{margin:0;color:#dbeafe;line-height:1.65;max-width:650px}
+.badge{white-space:nowrap;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:9px 13px;border-radius:999px;font-size:13px}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+.panel{background:rgba(248,250,252,.98);color:var(--text);border-radius:24px;padding:22px;box-shadow:var(--shadow);min-width:0}
+.panel h2{margin:0 0 6px;font-size:20px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+.preferences{display:grid;gap:14px}
+.pref{border:1px solid #e2e8f0;border-radius:18px;padding:15px;background:#fff}
+.pref-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px}
+.pref-head strong{font-size:15px}
+.value{font-size:13px;color:var(--accent);font-weight:800;background:#eff6ff;border-radius:999px;padding:4px 9px}
+.labels{display:flex;justify-content:space-between;color:#94a3b8;font-size:11px;margin-top:5px}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:0;border-radius:14px;padding:13px 16px;min-height:46px;font-weight:800;cursor:pointer;transition:.18s transform,.18s opacity,.18s box-shadow}
+.btn:active{transform:scale(.98)}
+.primary{background:linear-gradient(135deg,#2563eb,#0284c7);color:white;box-shadow:0 10px 24px rgba(37,99,235,.25)}
+.secondary{background:#e0f2fe;color:#075985}
+.coffee-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.coffee-card{border:1px solid #e2e8f0;border-radius:17px;padding:14px;background:#fff;position:relative;overflow:hidden}
+.coffee-card.top{border:2px solid #38bdf8;background:linear-gradient(145deg,#fff,#f0f9ff)}
+.rank{font-size:11px;color:#64748b;font-weight:800}
+.coffee-name{font-weight:900;font-size:17px;margin:3px 0}
+.desc{color:#64748b;font-size:12px;line-height:1.45;min-height:35px}
+.score-row{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:10px;font-size:12px}
+.score{font-weight:900;color:#075985}
+.bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:7px}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#2563eb);border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.picker{margin-top:18px;border:1px dashed #bae6fd;border-radius:20px;padding:18px;background:#f0f9ff;text-align:center}
+.cup-wrap{display:grid;place-items:center;min-height:190px}
+.cup{width:128px;height:100px;background:linear-gradient(135deg,#fff,#e2e8f0);border-radius:10px 10px 42px 42px;position:relative;box-shadow:inset 0 -8px 16px rgba(15,23,42,.08),0 10px 25px rgba(15,23,42,.1)}
+.cup:before{content:"";position:absolute;width:98px;height:22px;border-radius:50%;background:radial-gradient(ellipse,#4b2e1d 0 56%,#d7dce1 58% 64%,#fff 66%);left:15px;top:-10px}
+.cup:after{content:"";position:absolute;right:-30px;top:22px;width:40px;height:48px;border:10px solid #eef2f6;border-left:0;border-radius:0 28px 28px 0}
+.steam{position:absolute;left:50%;top:-70px;transform:translateX(-50%);display:flex;gap:12px}
+.steam span{display:block;width:8px;height:45px;border-radius:50%;border-left:3px solid rgba(255,255,255,.75);animation:steam 1.7s ease-in-out infinite}
+.steam span:nth-child(2){animation-delay:.25s}.steam span:nth-child(3){animation-delay:.5s}
+@keyframes steam{0%{transform:translateY(14px) scale(.8);opacity:0}45%{opacity:1}100%{transform:translateY(-8px) scale(1.12);opacity:0}}
+.spin{animation:spin .22s linear infinite}
+@keyframes spin{50%{transform:rotate(-4deg) scale(1.03)}}
+.pick-title{font-size:13px;color:#0369a1;font-weight:800}
+.pick-result{font-size:25px;font-weight:950;margin:5px 0 4px;letter-spacing:-.03em;color:#0f172a;min-height:35px}
+.notice{font-size:11px;color:#64748b;line-height:1.5;margin-top:12px}
+.tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.tag{background:white;color:#475569;border:1px solid #dbeafe;border-radius:999px;padding:5px 8px;font-size:11px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.badge{white-space:normal}.coffee-list{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){body{padding:18px 11px 32px}.panel{padding:16px;border-radius:20px}.coffee-list{grid-template-columns:1fr}.actions .btn{width:100%}.hero h1{font-size:32px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.fill,.btn{transition:none}.steam span,.spin{animation:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <h1>☕ 오늘의 커피 선택기</h1>
+      <p>지금 기분에 맞게 슬라이더를 움직여 커피 추천 순위를 보고, 결정이 어려우면 재미로 오늘의 한 잔을 뽑아보세요.</p>
+    </div>
+    <div class="badge">Coffee Decision Helper</div>
+  </section>
+
+  <section class="grid">
+    <article class="panel">
+      <h2>오늘은 어떤 커피가 당기나요?</h2>
+      <div class="sub">취향을 조절하면 추천 점수가 바로 계산됩니다.</div>
+
+      <div class="preferences">
+        <div class="pref">
+          <div class="pref-head"><strong>진한 맛</strong><span class="value" id="strongVal">3</span></div>
+          <input id="strong" type="range" min="1" max="5" value="3" aria-label="진한 맛 선호도">
+          <div class="labels"><span>부드럽게</span><span>진하게</span></div>
+        </div>
+        <div class="pref">
+          <div class="pref-head"><strong>달콤함</strong><span class="value" id="sweetVal">3</span></div>
+          <input id="sweet" type="range" min="1" max="5" value="3" aria-label="달콤함 선호도">
+          <div class="labels"><span>담백하게</span><span>달콤하게</span></div>
+        </div>
+        <div class="pref">
+          <div class="pref-head"><strong>우유 느낌</strong><span class="value" id="milkVal">3</span></div>
+          <input id="milk" type="range" min="1" max="5" value="3" aria-label="우유 느낌 선호도">
+          <div class="labels"><span>블랙</span><span>밀키하게</span></div>
+        </div>
+        <div class="pref">
+          <div class="pref-head"><strong>시원함</strong><span class="value" id="coldVal">3</span></div>
+          <input id="cold" type="range" min="1" max="5" value="3" aria-label="시원함 선호도">
+          <div class="labels"><span>따뜻하게</span><span>차갑게</span></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="recommendBtn" type="button">내 취향으로 추천</button>
+        <button class="btn secondary" id="randomizeBtn" type="button">기분 랜덤 설정</button>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h2>오늘의 추천 순위</h2>
+      <div class="sub">현재 취향과 가까운 순서입니다.</div>
+      <div class="coffee-list" id="coffeeList"></div>
+
+      <section class="picker">
+        <div class="pick-title">결정이 어려울 때</div>
+        <div class="cup-wrap">
+          <div class="cup" id="cup">
+            <div class="steam"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="pick-result" id="pickResult" aria-live="polite">오늘의 한 잔을 뽑아보세요</div>
+        <div class="tags" id="pickTags"></div>
+        <button class="btn primary" id="pickBtn" type="button" style="margin-top:14px">🎲 오늘 마실 커피 뽑기</button>
+        <div class="notice">※ 랜덤 뽑기는 재미 요소입니다. 카페인 섭취량, 건강 상태, 개인 취향을 고려해 최종 선택하세요.</div>
+      </section>
+    </article>
+  </section>
+</main>
+
+<script>
+(() => {
+  const coffees = [
+    {name:"아메리카노", desc:"깔끔하고 선명한 기본 선택", strong:4, sweet:1, milk:1, cold:3, tags:["깔끔","집중"]},
+    {name:"카페라떼", desc:"부드럽고 편안한 밸런스", strong:3, sweet:2, milk:5, cold:3, tags:["부드러움","편안"]},
+    {name:"바닐라 라떼", desc:"달콤하고 포근한 기분 전환", strong:2, sweet:5, milk:5, cold:3, tags:["달콤","기분전환"]},
+    {name:"카푸치노", desc:"진한 에스프레소와 풍성한 거품", strong:4, sweet:2, milk:4, cold:1, tags:["진한맛","거품"]},
+    {name:"콜드브루", desc:"차갑고 깊은 맛을 오래 즐기기", strong:5, sweet:1, milk:1, cold:5, tags:["시원","묵직"]},
+    {name:"카라멜 마키아토", desc:"커피와 달콤함을 동시에", strong:3, sweet:5, milk:4, cold:3, tags:["달콤","디저트"]},
+    {name:"플랫화이트", desc:"우유는 부드럽게, 커피 맛은 또렷하게", strong:5, sweet:1, milk:4, cold:2, tags:["진한맛","밀키"]},
+    {name:"에스프레소", desc:"짧고 강렬하게 집중하는 한 잔", strong:5, sweet:1, milk:1, cold:1, tags:["강렬","빠르게"]}
+  ];
+
+  const ids = ["strong","sweet","milk","cold"];
+  const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+  const list = document.getElementById("coffeeList");
+  const result = document.getElementById("pickResult");
+  const tags = document.getElementById("pickTags");
+  const cup = document.getElementById("cup");
+  const pickBtn = document.getElementById("pickBtn");
+  let currentRanking = [];
+  let timer = null;
+
+  function prefs(){
+    return Object.fromEntries(ids.map(id => [id, Number(els[id].value)]));
+  }
+
+  function score(c,p){
+    const maxDistance = 16;
+    const distance = ids.reduce((sum,id) => sum + Math.abs(c[id]-p[id]), 0);
+    return Math.max(0, Math.round((1 - distance/maxDistance) * 100));
+  }
+
+  function render(){
+    const p = prefs();
+    currentRanking = coffees.map(c => ({...c, score:score(c,p)}))
+      .sort((a,b) => b.score-a.score || a.name.localeCompare(b.name,"ko"));
+
+    list.innerHTML = currentRanking.map((c,i) => `
+      <div class="coffee-card ${i===0 ? "top":""}">
+        <div class="rank">${i===0 ? "🏆 BEST MATCH" : `${i+1}위`}</div>
+        <div class="coffee-name">${c.name}</div>
+        <div class="desc">${c.desc}</div>
+        <div class="score-row"><span>취향 일치도</span><span class="score">${c.score}점</span></div>
+        <div class="bar"><div class="fill" style="width:${c.score}%"></div></div>
+      </div>
+    `).join("");
+  }
+
+  ids.forEach(id => {
+    const out = document.getElementById(id+"Val");
+    els[id].addEventListener("input", () => {
+      out.textContent = els[id].value;
+      render();
+    });
+  });
+
+  document.getElementById("recommendBtn").addEventListener("click", () => {
+    render();
+    const best = currentRanking[0];
+    result.textContent = `추천 1순위: ${best.name}`;
+    tags.innerHTML = best.tags.map(t => `<span class="tag">${t}</span>`).join("");
+  });
+
+  document.getElementById("randomizeBtn").addEventListener("click", () => {
+    ids.forEach(id => {
+      const v = Math.floor(Math.random()*5)+1;
+      els[id].value = v;
+      document.getElementById(id+"Val").textContent = v;
+    });
+    render();
+  });
+
+  pickBtn.addEventListener("click", () => {
+    if(timer) return;
+    pickBtn.disabled = true;
+    cup.classList.add("spin");
+    result.textContent = "오늘의 커피를 고르는 중…";
+    tags.innerHTML = "";
+    let count = 0;
+    timer = setInterval(() => {
+      const c = coffees[Math.floor(Math.random()*coffees.length)];
+      result.textContent = c.name;
+      count++;
+      if(count >= 14){
+        clearInterval(timer); timer = null;
+        const picked = coffees[Math.floor(Math.random()*coffees.length)];
+        result.textContent = `☕ ${picked.name}`;
+        tags.innerHTML = picked.tags.map(t => `<span class="tag">${t}</span>`).join("");
+        cup.classList.remove("spin");
+        pickBtn.disabled = false;
+      }
+    }, 100);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
